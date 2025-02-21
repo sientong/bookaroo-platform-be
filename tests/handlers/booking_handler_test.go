@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
+	"encoding/json"
 )
 
 type BookingHandlerTestSuite struct {
@@ -233,6 +234,44 @@ func (suite *BookingHandlerTestSuite) TestGetGuestBookings() {
 func (suite *BookingHandlerTestSuite) TestGetGuestBookingsNonExistentGuest() {
 	w := tests.MakeRequest(suite.router, "GET", "/bookings/guest/999999", nil)
 	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+}
+
+func (suite *BookingHandlerTestSuite) TestCreateBookingSuccess() {
+    // First, log in to get a token
+    token := suite.LoginAndGetToken()
+
+    // Prepare booking request
+    reqBody := map[string]interface{}{
+        "property_id": 1,
+        "start_date": "2024-03-16T00:00:00Z",
+        "end_date": "2024-03-18T00:00:00Z",
+    }
+    jsonBody, _ := json.Marshal(reqBody)
+
+    // Make request with token
+    w := tests.MakeRequestWithToken(suite.router, "POST", "/bookings", jsonBody, token)
+
+    // Assert response
+    assert.Equal(suite.T(), http.StatusCreated, w.Code)
+    var response map[string]interface{}
+    tests.ParseResponse(suite.T(), w, &response)
+    assert.Equal(suite.T(), "Booking created successfully", response["message"])
+}
+
+func (suite *BookingHandlerTestSuite) LoginAndGetToken() string {
+    // Prepare login request
+    loginBody := map[string]interface{}{
+        "email":    "test@example.com",
+        "password": "testpass123",
+    }
+    jsonBody, _ := json.Marshal(loginBody)
+
+    // Make login request
+    w := tests.MakeRequest(suite.router, "POST", "/login", jsonBody)
+    var response map[string]interface{}
+    tests.ParseResponse(suite.T(), w, &response)
+
+    return response["token"].(string) // Return the token
 }
 
 func TestBookingHandlerSuite(t *testing.T) {

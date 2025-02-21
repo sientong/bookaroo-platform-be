@@ -42,8 +42,8 @@ type PropertyDetails struct {
 }
 
 type GuestBookingsResponse struct {
-	Bookings    []GuestBookingResponse `json:"bookings"`
-	Statistics  GuestBookingStats      `json:"statistics"`
+	Bookings   []GuestBookingResponse `json:"bookings"`
+	Statistics GuestBookingStats      `json:"statistics"`
 }
 
 type GuestBookingStats struct {
@@ -53,15 +53,24 @@ type GuestBookingStats struct {
 }
 
 // CreateBooking handles new booking creation
+// @Summary Create a new booking
+// @Description Create a new booking with the given details
+// @Tags bookings
+// @Accept json
+// @Produce json
+// @Param booking body CreateBookingRequest true "Booking details"
+// @Success 201 {object} models.Booking
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 401 {object} models.ErrorResponse
+// @Router /bookings [post]
 func (h *BookingHandler) CreateBooking(c *gin.Context) {
+	userID, _ := c.Get("user_id") // Get user ID from context
+
 	var req CreateBookingRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	// Get user ID from context (set by auth middleware)
-	userID := uint(1) // TODO: Replace with actual user ID from context
 
 	// Check if property exists
 	var property models.Property
@@ -89,7 +98,7 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 
 	booking := models.Booking{
 		PropertyID: req.PropertyID,
-		UserID:     userID,
+		UserID:     userID.(uint),
 		StartDate:  req.StartDate,
 		EndDate:    req.EndDate,
 		TotalPrice: totalPrice,
@@ -101,10 +110,18 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, booking)
+	c.JSON(http.StatusCreated, gin.H{"message": "Booking created successfully"})
 }
 
 // GetGuestBookings returns a list of bookings for a specific guest
+// @Summary Get bookings for a guest
+// @Description Retrieve a list of bookings for the authenticated guest
+// @Tags bookings
+// @Accept json
+// @Produce json
+// @Success 200 {object} GuestBookingsResponse
+// @Failure 401 {object} map[string]string
+// @Router /bookings [get]
 func (h *BookingHandler) GetGuestBookings(c *gin.Context) {
 	// Get guest ID from URL
 	guestID := c.Param("guest_id")
@@ -125,7 +142,7 @@ func (h *BookingHandler) GetGuestBookings(c *gin.Context) {
 
 	// Prepare response
 	response := GuestBookingsResponse{
-		Bookings: make([]GuestBookingResponse, 0),
+		Bookings:   make([]GuestBookingResponse, 0),
 		Statistics: GuestBookingStats{},
 	}
 

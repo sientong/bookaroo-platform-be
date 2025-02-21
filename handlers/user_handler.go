@@ -94,6 +94,16 @@ func (h *UserHandler) GetUserDashboard(c *gin.Context) {
 }
 
 // RegisterOwner handles the registration of a new property owner
+// @Summary Register a new property owner
+// @Description Register a new property owner with the given details
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param owner body RegisterOwnerRequest true "Owner registration details"
+// @Success 201 {object} models.User
+// @Failure 400 {object} map[string]string
+// @Failure 409 {object} map[string]string
+// @Router /register/owner [post]
 func (h *UserHandler) RegisterOwner(c *gin.Context) {
 	var req RegisterOwnerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -149,6 +159,16 @@ func (h *UserHandler) RegisterOwner(c *gin.Context) {
 }
 
 // RegisterGuest handles the registration of a new guest user
+// @Summary Register a new guest user
+// @Description Register a new guest user with the given details
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param guest body RegisterGuestRequest true "Guest registration details"
+// @Success 201 {object} models.User
+// @Failure 400 {object} map[string]string
+// @Failure 409 {object} map[string]string
+// @Router /register/guest [post]
 func (h *UserHandler) RegisterGuest(c *gin.Context) {
 	var req RegisterGuestRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -202,7 +222,17 @@ func (h *UserHandler) RegisterGuest(c *gin.Context) {
 	c.JSON(http.StatusCreated, response)
 }
 
-// Login authenticates a user and returns a JWT token
+// Login handles user login
+// @Summary User login
+// @Description Login and receive JWT token
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param login body LoginRequest true "Login details"
+// @Success 200 {object} LoginResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Router /login [post]
 func (h *UserHandler) Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

@@ -52,6 +52,17 @@ func MakeRequest(router *gin.Engine, method, path string, body interface{}) *htt
 	return w
 }
 
+// MakeRequestWithToken makes an HTTP request with the given method, path, and body, including a JWT token in the Authorization header.
+func MakeRequestWithToken(router *gin.Engine, method, path string, body []byte, token string) *httptest.ResponseRecorder {
+	req, _ := http.NewRequest(method, path, bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token) // Set the token in the Authorization header
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	return w
+}
+
 // ClearTestDB clears the test database
 func ClearTestDB(t *testing.T, db *gorm.DB) {
 	err := db.Exec("DELETE FROM users").Error

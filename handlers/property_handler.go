@@ -19,6 +19,13 @@ func NewPropertyHandler(db *gorm.DB) *PropertyHandler {
 }
 
 // ListProperties returns all properties with optional filtering
+// @Summary List all properties
+// @Description Retrieve a list of all properties
+// @Tags properties
+// @Accept json
+// @Produce json
+// @Success 200 {array} models.Property
+// @Router /properties [get]
 func (h *PropertyHandler) ListProperties(c *gin.Context) {
 	var properties []models.Property
 	query := h.DB.Preload("Images").Preload("Owner")
@@ -37,6 +44,15 @@ func (h *PropertyHandler) ListProperties(c *gin.Context) {
 }
 
 // GetProperty returns details of a specific property
+// @Summary Get a specific property
+// @Description Retrieve a property by its ID
+// @Tags properties
+// @Accept json
+// @Produce json
+// @Param id path int true "Property ID"
+// @Success 200 {object} models.Property
+// @Failure 404 {object} map[string]string
+// @Router /properties/{id} [get]
 func (h *PropertyHandler) GetProperty(c *gin.Context) {
 	id := c.Param("id")
 	var property models.Property
@@ -50,6 +66,14 @@ func (h *PropertyHandler) GetProperty(c *gin.Context) {
 }
 
 // SearchProperties handles property search with various filters
+// @Summary Search properties
+// @Description Search for properties based on criteria
+// @Tags properties
+// @Accept json
+// @Produce json
+// @Param location query string false "Location to search"
+// @Success 200 {array} models.Property
+// @Router /properties/search [get]
 func (h *PropertyHandler) SearchProperties(c *gin.Context) {
 	var properties []models.Property
 	query := h.DB.Preload("Images").Preload("Owner")
@@ -80,12 +104,12 @@ func (h *PropertyHandler) SearchProperties(c *gin.Context) {
 }
 
 type CreatePropertyRequest struct {
-	Name        string                   `json:"name" binding:"required"`
-	Description string                   `json:"description" binding:"required"`
-	Location    string                   `json:"location" binding:"required"`
-	Price       float64                  `json:"price" binding:"required"`
-	Amenities   string                   `json:"amenities"`
-	OwnerID     uint                     `json:"owner_id" binding:"required"`
+	Name        string                       `json:"name" binding:"required"`
+	Description string                       `json:"description" binding:"required"`
+	Location    string                       `json:"location" binding:"required"`
+	Price       float64                      `json:"price" binding:"required"`
+	Amenities   string                       `json:"amenities"`
+	OwnerID     uint                         `json:"owner_id" binding:"required"`
 	Images      []CreatePropertyImageRequest `json:"images"`
 }
 
@@ -94,80 +118,63 @@ type CreatePropertyImageRequest struct {
 }
 
 type UpdatePropertyRequest struct {
-	Name        string                   `json:"name" binding:"required"`
-	Description string                   `json:"description" binding:"required"`
-	Location    string                   `json:"location" binding:"required"`
-	Price       float64                  `json:"price" binding:"required"`
-	Amenities   string                   `json:"amenities"`
-	OwnerID     uint                     `json:"owner_id" binding:"required"`
+	Name        string                       `json:"name" binding:"required"`
+	Description string                       `json:"description" binding:"required"`
+	Location    string                       `json:"location" binding:"required"`
+	Price       float64                      `json:"price" binding:"required"`
+	Amenities   string                       `json:"amenities"`
+	OwnerID     uint                         `json:"owner_id" binding:"required"`
 	Images      []CreatePropertyImageRequest `json:"images"`
 }
 
-// CreateProperty handles the creation of a new property
+// CreateProperty handles new property creation
+// @Summary Create a new property
+// @Description Create a new property with the given details
+// @Tags properties
+// @Accept json
+// @Produce json
+// @Param property body CreatePropertyRequest true "Property details"
+// @Success 201 {object} models.Property
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Router /properties [post]
 func (h *PropertyHandler) CreateProperty(c *gin.Context) {
+	userID, _ := c.Get("user_id") // Get user ID from context
+
 	var req CreatePropertyRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Verify owner exists and is an owner
-	var owner models.User
-	if err := h.DB.First(&owner, req.OwnerID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Owner not found"})
-		return
-	}
-
-	if owner.Role != "owner" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User is not an owner"})
-		return
-	}
-
-	// Create property
 	property := models.Property{
 		Name:        req.Name,
 		Description: req.Description,
 		Location:    req.Location,
 		Price:       req.Price,
-		Amenities:   req.Amenities,
-		OwnerID:     req.OwnerID,
+		OwnerID:     userID.(uint), // Associate property with the user
 	}
 
-	// Start a transaction
-	tx := h.DB.Begin()
-
-	if err := tx.Create(&property).Error; err != nil {
-		tx.Rollback()
+	if err := h.DB.Create(&property).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create property"})
 		return
 	}
-
-	// Create property images
-	for _, img := range req.Images {
-		propertyImage := models.PropertyImage{
-			PropertyID: property.ID,
-			ImageURL:   img.ImageURL,
-		}
-		if err := tx.Create(&propertyImage).Error; err != nil {
-			tx.Rollback()
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create property images"})
-			return
-		}
-	}
-
-	// Commit transaction
-	if err := tx.Commit().Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
-		return
-	}
-
-	// Load the created images
-	h.DB.Preload("Images").First(&property, property.ID)
 
 	c.JSON(http.StatusCreated, property)
 }
 
 // UpdateProperty handles updating an existing property
+// @Summary Update a property
+// @Description Update a property with the given details
+// @Tags properties
+// @Accept json
+// @Produce json
+// @Param id path int true "Property ID"
+// @Param property body UpdatePropertyRequest true "Property details"
+// @Success 200 {object} models.Property
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Router /properties/{id} [patch]
 func (h *PropertyHandler) UpdateProperty(c *gin.Context) {
 	var req UpdatePropertyRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -248,10 +255,10 @@ func (h *PropertyHandler) UpdateProperty(c *gin.Context) {
 
 type PropertyDetailsResponse struct {
 	models.Property
-	IsAvailable      bool           `json:"is_available"`
+	IsAvailable       bool          `json:"is_available"`
 	NextAvailableDate *time.Time    `json:"next_available_date"`
-	BookingHistory   []BookingInfo  `json:"booking_history"`
-	Statistics       BookingStats   `json:"statistics"`
+	BookingHistory    []BookingInfo `json:"booking_history"`
+	Statistics        BookingStats  `json:"statistics"`
 }
 
 type BookingInfo struct {
@@ -270,6 +277,17 @@ type BookingStats struct {
 }
 
 // GetPropertyDetailsForOwner returns detailed property information for the owner
+// @Summary Get property details for owner
+// @Description Retrieve detailed property information for the owner
+// @Tags properties
+// @Accept json
+// @Produce json
+// @Param id path int true "Property ID"
+// @Param owner_id query int true "Owner ID"
+// @Success 200 {object} PropertyDetailsResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Router /properties/{id}/details [get]
 func (h *PropertyHandler) GetPropertyDetailsForOwner(c *gin.Context) {
 	// Get property ID from URL
 	propertyID := c.Param("id")

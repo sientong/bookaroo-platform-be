@@ -1,11 +1,9 @@
 package models
 
-import (
-	"gorm.io/gorm"
-)
-
+// User represents a user in the system
+// @Description User model
 type User struct {
-	gorm.Model
+	ID           uint    `json:"id" gorm:"primaryKey"`
 	Email        string  `json:"email" gorm:"unique"`
 	Password     string  `json:"password"`
 	Name         string  `json:"name"`

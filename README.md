@@ -65,32 +65,33 @@ go run main.go
 
 The server will start at `http://localhost:8080`
 
+## API Documentation
+
+This API is documented using Swagger. You can access the Swagger UI to view and interact with the API endpoints.
+
+- **Swagger UI**: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
+
+### How to Generate Swagger Documentation
+To regenerate the Swagger documentation after making changes to the API:
+1. Ensure you have the Swagger CLI installed.
+2. Run the following command in the root of your project:
+   ```bash
+   swag init
+   ```
+3. Restart your application to see the updated documentation in the Swagger UI.
+
 ## API Endpoints
 
-### Authentication
+### User Registration and Login
 - `POST /api/register/owner` - Register a new property owner
 - `POST /api/register/guest` - Register a new guest user
 - `POST /api/login` - Login and receive JWT token
 
-## Authentication
-
-The API uses JWT (JSON Web Token) for authentication. To access protected endpoints:
-
-1. First, obtain a JWT token by logging in:
-   ```bash
-   curl -X POST http://localhost:8080/api/login \
-     -H "Content-Type: application/json" \
-     -d '{
-       "email": "user@example.com",
-       "password": "your_password"
-     }'
-   ```
-
-2. Include the token in subsequent requests:
-   ```bash
-   curl -X GET http://localhost:8080/api/protected-endpoint \
-     -H "Authorization: Bearer your_jwt_token"
-   ```
+### Authentication
+To access protected endpoints, include the JWT token in the Authorization header as follows:
+```bash
+Authorization: Bearer your_jwt_token
+```
 
 ### Token Format
 The JWT token contains the following claims:
@@ -118,11 +119,3 @@ Some endpoints require specific roles to access. The API will return:
 
 ### User Dashboard
 - `GET /api/dashboard` - Get user dashboard (different view for owners and guests)
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
