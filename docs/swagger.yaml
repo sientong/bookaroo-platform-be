@@ -1,0 +1,667 @@
+definitions:
+  handlers.BookingInfo:
+    properties:
+      end_date:
+        type: string
+      guest_name:
+        type: string
+      id:
+        type: integer
+      start_date:
+        type: string
+      status:
+        type: string
+      total_price:
+        type: number
+    type: object
+  handlers.BookingStats:
+    properties:
+      total_bookings:
+        type: integer
+      total_revenue:
+        type: number
+      upcoming_bookings:
+        type: integer
+    type: object
+  handlers.CreateBookingRequest:
+    properties:
+      end_date:
+        type: string
+      property_id:
+        type: integer
+      start_date:
+        type: string
+    required:
+    - end_date
+    - property_id
+    - start_date
+    type: object
+  handlers.CreatePropertyImageRequest:
+    properties:
+      image_url:
+        type: string
+    required:
+    - image_url
+    type: object
+  handlers.CreatePropertyRequest:
+    properties:
+      amenities:
+        type: string
+      description:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/handlers.CreatePropertyImageRequest'
+        type: array
+      location:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: integer
+      price:
+        type: number
+    required:
+    - description
+    - location
+    - name
+    - owner_id
+    - price
+    type: object
+  handlers.GuestBookingResponse:
+    properties:
+      end_date:
+        type: string
+      id:
+        type: integer
+      property:
+        $ref: '#/definitions/handlers.PropertyDetails'
+      start_date:
+        type: string
+      status:
+        type: string
+      total_price:
+        type: number
+    type: object
+  handlers.GuestBookingStats:
+    properties:
+      total_bookings:
+        type: integer
+      total_spent:
+        type: number
+      upcoming_bookings:
+        type: integer
+    type: object
+  handlers.GuestBookingsResponse:
+    properties:
+      bookings:
+        items:
+          $ref: '#/definitions/handlers.GuestBookingResponse'
+        type: array
+      statistics:
+        $ref: '#/definitions/handlers.GuestBookingStats'
+    type: object
+  handlers.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  handlers.LoginResponse:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      role:
+        type: string
+      token:
+        type: string
+    type: object
+  handlers.PropertyDetails:
+    properties:
+      amenities:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      location:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+    type: object
+  handlers.PropertyDetailsResponse:
+    properties:
+      amenities:
+        type: string
+      booking_history:
+        items:
+          $ref: '#/definitions/handlers.BookingInfo'
+        type: array
+      bookings:
+        items:
+          $ref: '#/definitions/models.Booking'
+        type: array
+      description:
+        type: string
+      id:
+        type: integer
+      images:
+        description: Associated images
+        items:
+          $ref: '#/definitions/models.PropertyImage'
+        type: array
+      is_available:
+        type: boolean
+      location:
+        type: string
+      name:
+        type: string
+      next_available_date:
+        type: string
+      owner:
+        $ref: '#/definitions/models.User'
+      owner_id:
+        description: Foreign key for the owner
+        type: integer
+      price:
+        type: number
+      statistics:
+        $ref: '#/definitions/handlers.BookingStats'
+    type: object
+  handlers.RegisterGuestRequest:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      phone:
+        type: string
+    required:
+    - address
+    - email
+    - name
+    - password
+    - phone
+    type: object
+  handlers.RegisterOwnerRequest:
+    properties:
+      address:
+        type: string
+      business_name:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      phone:
+        type: string
+    required:
+    - address
+    - business_name
+    - email
+    - name
+    - password
+    - phone
+    type: object
+  handlers.UpdatePropertyRequest:
+    properties:
+      amenities:
+        type: string
+      description:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/handlers.CreatePropertyImageRequest'
+        type: array
+      location:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: integer
+      price:
+        type: number
+    required:
+    - description
+    - location
+    - name
+    - owner_id
+    - price
+    type: object
+  models.Booking:
+    description: Booking model
+    properties:
+      end_date:
+        type: string
+      id:
+        type: integer
+      property:
+        $ref: '#/definitions/models.Property'
+      property_id:
+        type: integer
+      start_date:
+        type: string
+      status:
+        type: string
+      total_price:
+        type: number
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: integer
+    type: object
+  models.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  models.Property:
+    description: Property model
+    properties:
+      amenities:
+        type: string
+      bookings:
+        items:
+          $ref: '#/definitions/models.Booking'
+        type: array
+      description:
+        type: string
+      id:
+        type: integer
+      images:
+        description: Associated images
+        items:
+          $ref: '#/definitions/models.PropertyImage'
+        type: array
+      location:
+        type: string
+      name:
+        type: string
+      owner:
+        $ref: '#/definitions/models.User'
+      owner_id:
+        description: Foreign key for the owner
+        type: integer
+      price:
+        type: number
+    type: object
+  models.PropertyImage:
+    properties:
+      id:
+        type: integer
+      image_url:
+        type: string
+      property_id:
+        description: Foreign key for the property
+        type: integer
+    type: object
+  models.User:
+    description: User model
+    properties:
+      address:
+        description: Added
+        type: string
+      business_name:
+        description: Added as pointer since it's optional (only for owners)
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+      phone:
+        description: Added
+        type: string
+      role:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /bookings:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of bookings for the authenticated guest
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.GuestBookingsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get bookings for a guest
+      tags:
+      - bookings
+    post:
+      consumes:
+      - application/json
+      description: Create a new booking with the given details
+      parameters:
+      - description: Booking details
+        in: body
+        name: booking
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateBookingRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Booking'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Create a new booking
+      tags:
+      - bookings
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login and receive JWT token
+      parameters:
+      - description: Login details
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: User login
+      tags:
+      - users
+  /properties:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all properties
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Property'
+            type: array
+      summary: List all properties
+      tags:
+      - properties
+    post:
+      consumes:
+      - application/json
+      description: Create a new property with the given details
+      parameters:
+      - description: Property details
+        in: body
+        name: property
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreatePropertyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Property'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new property
+      tags:
+      - properties
+  /properties/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a property by its ID
+      parameters:
+      - description: Property ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Property'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a specific property
+      tags:
+      - properties
+    patch:
+      consumes:
+      - application/json
+      description: Update a property with the given details
+      parameters:
+      - description: Property ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Property details
+        in: body
+        name: property
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdatePropertyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Property'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a property
+      tags:
+      - properties
+  /properties/{id}/details:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve detailed property information for the owner
+      parameters:
+      - description: Property ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Owner ID
+        in: query
+        name: owner_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.PropertyDetailsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get property details for owner
+      tags:
+      - properties
+  /properties/search:
+    get:
+      consumes:
+      - application/json
+      description: Search for properties based on criteria
+      parameters:
+      - description: Location to search
+        in: query
+        name: location
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Property'
+            type: array
+      summary: Search properties
+      tags:
+      - properties
+  /register/guest:
+    post:
+      consumes:
+      - application/json
+      description: Register a new guest user with the given details
+      parameters:
+      - description: Guest registration details
+        in: body
+        name: guest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RegisterGuestRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new guest user
+      tags:
+      - users
+  /register/owner:
+    post:
+      consumes:
+      - application/json
+      description: Register a new property owner with the given details
+      parameters:
+      - description: Owner registration details
+        in: body
+        name: owner
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RegisterOwnerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new property owner
+      tags:
+      - users
+swagger: "2.0"
