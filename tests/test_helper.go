@@ -43,11 +43,19 @@ func MakeRequest(router *gin.Engine, method, path string, body interface{}) *htt
 	if body != nil {
 		reqBody, _ = json.Marshal(body)
 	}
-	
+
 	req, _ := http.NewRequest(method, path, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	return w
+}
+
+// ClearTestDB clears the test database
+func ClearTestDB(t *testing.T, db *gorm.DB) {
+	err := db.Exec("DELETE FROM users").Error
+	if err != nil {
+		t.Fatalf("failed to clear test DB: %v", err)
+	}
 }

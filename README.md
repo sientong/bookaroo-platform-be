@@ -67,6 +67,43 @@ The server will start at `http://localhost:8080`
 
 ## API Endpoints
 
+### Authentication
+- `POST /api/register/owner` - Register a new property owner
+- `POST /api/register/guest` - Register a new guest user
+- `POST /api/login` - Login and receive JWT token
+
+## Authentication
+
+The API uses JWT (JSON Web Token) for authentication. To access protected endpoints:
+
+1. First, obtain a JWT token by logging in:
+   ```bash
+   curl -X POST http://localhost:8080/api/login \
+     -H "Content-Type: application/json" \
+     -d '{
+       "email": "user@example.com",
+       "password": "your_password"
+     }'
+   ```
+
+2. Include the token in subsequent requests:
+   ```bash
+   curl -X GET http://localhost:8080/api/protected-endpoint \
+     -H "Authorization: Bearer your_jwt_token"
+   ```
+
+### Token Format
+The JWT token contains the following claims:
+- `user_id`: The user's ID
+- `email`: The user's email
+- `role`: The user's role (owner/guest)
+- Standard JWT claims (exp, iat)
+
+### Role-Based Access
+Some endpoints require specific roles to access. The API will return:
+- `401 Unauthorized`: Missing or invalid token
+- `403 Forbidden`: Valid token but insufficient role permissions
+
 ### Properties
 - `GET /api/properties` - List all properties
 - `GET /api/properties/:id` - Get property details
